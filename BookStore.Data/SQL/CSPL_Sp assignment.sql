@@ -1,44 +1,80 @@
 create database masterTab
 use masterTab
 
-create table FamilyMem(Mid int primary key, Fname varchar(40), Lname varchar(40),Income int, Work varchar(40)) 
+create table FamilyMem1
+(
+Mid1 int primary key identity,
+Fname varchar(40),
+Lname varchar(40),
+Income int, Work varchar(40)
+) 
 
-insert into FamilyMem values(1,'Ram','chintha',40000,'soft Engg')
-insert into FamilyMem values(2,'Naresh','Neeru',25000,'soft dev')
 
-select * from FamilyMem
 
-create table FamilyExp(Eid int primary key, Mid int, Purpose var+
-char(40),Amount int, foreign key(Mid) references FamilyMem(Mid))
-insert into FamilyExp values 
+select * from FamilyMem1
+select * from FamilyExp1
 
-(1,2,'Shopping',10000),
-(2,1,'Groceries',1500);
 
-select * from FamilyMem
-select * from FamilyExp
-
-select * from FamilyMem fm join FamilyExp fe on fm.Mid=fe.Mid 
+create table FamilyExp1
+(
+Eid int primary key identity,
+Purpose varchar(40),
+Amount int, 
+Mid1 int foreign key references FamilyMem1(Mid1)
+)
 
 ------------stored procedure
 
-create proc FamilyDet
-(@Mid int, @Fname varchar(40),@lname varchar(40), @income int ,@work varchar(40),@Eid int, @Purpose varchar(40), @Amount int)
-as begin
-insert into FamilyMem values (@Mid,@Fname,@lname,@income,@work)
-insert into FamilyExp values (@Eid,@Mid,@Purpose,@Amount)
+alter proc FamilyDet
+(
+@Fname varchar(40),
+@lname varchar(40),
+@income int ,
+@work varchar(40),
+@Purpose varchar(40),
+@Amount int)
+as
+begin
+insert into FamilyMem1(Fname,Lname,Income,Work) values (@Fname,@lname,@income,@work)
+declare @id int
+select @id=SCOPE_IDENTITY()
+insert into FamilyExp1(Purpose,Amount,Mid1)values(@Purpose,@Amount,@id)
 end
 
+exec FamilyDet 'govind','govind1',1000,'emp','repair',2000 
+exec FamilyDet 'rahul','c',0,'student','fee',5000
+select * from FamilyMem1
+select * from FamilyExp1
+--select * from FamilyMem fm join FamilyExp fe on fm.Mid=fe.Mid 
 
-exec FamilyDet 4,'venky','veena',27000,'Weaver',3,'Mobile Purchased',15000
-exec FamilyDet 5,'Raju','Chinnu',0,'Student',5,'School Fee',54000
+--------------fetching data
 
+alter procedure FetchAllData
+(
+@id int,
 
+@Fname varchar(20)
+)
+as
+begin
+ if(isnull(@id,'') != '')
+ begin
+select b.Mid1,b.Fname,b.Lname,b.Income,b.work,b1.Purpose,
+b1.Amount,b1.Eid
+from FamilyMem1 b join FamilyExp1 b1
+on b.Mid1=b1.Mid1
+and (b.Mid1=@id or b.Fname=@Fname)
+end
+else
+begin 
+select  b.Mid1,b.Fname,b.Lname,b.Income,b.work,b1.Purpose,
+b1.Amount,b1.Eid
+from FamilyMem1 b join FamilyExp1 b1
+on b.Mid1=b1.Mid1
+ end
+end
 
-select * from FamilyMem
-select * from FamilyExp
-select * from FamilyMem fm join FamilyExp fe on fm.Mid=fe.Mid 
+exec FetchAllData 3,''
 
-
-
-
+select * from FamilyMem1
+select * from FamilyExp1
